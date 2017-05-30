@@ -16,6 +16,7 @@ class MultiArmedBandit:
         self.pulls = [0] * self.numarms
         self.reward_accumulator = [0] * self.numarms
         self.optimal_arm = random.randing(0, self.numarms)
+        self.rewards_avg = [0] * numarms
     
     def Pull(self):
         return 1
@@ -31,14 +32,6 @@ class MultiArmedBandit:
         
     
 class IncrementalUniform(MultiArmedBandit):
-    def __init__(self, bandit):
-        self.bandit = bandit
-        self.numarms = bandit.NumArms()
-        self.pulls_tot = 0
-        self.pulls = [0] * self.numarms
-        self.reward_accumulator = [0] * self.numarms
-        self.optimal_arm = random.randing(0, numarms)
-    
     def Pull(self):
         a = self.pulls_tot % self.bandit.NumArms()
         reward_a = self.bandit.Pull(a)
@@ -46,7 +39,19 @@ class IncrementalUniform(MultiArmedBandit):
         return (a, reward_a)
     
 class UCB(MultiArmedBandit):
-    def __init__(self, bandit):
+    def Pull(self):
+        if self.pulls_tot < self.numarms:
+            #pull unpulled arms
+            a = self.pulls_tot % self.numarms
+        else:
+            #get exploration term
+            avg = self.rewards_avg
+            x = np.log(self.pulls_tot)
+            y = np.divide(n, self.pulls)
+            epsilon = np.sqrt(y)
+            a = np.argmax(avg + epsilon)
         
-        
-        
+        reward = self.bandit.Pull(a)
+        self.updateRewards(a, reward)
+        return (a, reward)
+    
