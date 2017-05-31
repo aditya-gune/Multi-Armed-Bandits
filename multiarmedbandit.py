@@ -15,11 +15,13 @@ class MultiArmedBandit:
         self.pulls_tot = 0
         self.pulls = [0] * self.numarms
         self.reward_accumulator = [0] * self.numarms
-        self.optimal_arm = random.randing(0, self.numarms)
+        self.optimal_arm = random.randint(0, self.numarms)
         self.rewards_avg = [0] * numarms
     
-    def Pull(self):
-        return 1
+    def Pull(self, bandit, a):
+        reward = bandit.Pull(a)
+        self.updateRewards(a, reward)
+        return (a, reward)
     
     def NumArms(self):
         return self.numarms
@@ -32,14 +34,12 @@ class MultiArmedBandit:
         
     
 class IncrementalUniform(MultiArmedBandit):
-    def Pull(self):
+    def calculateArmPull(self):
         a = self.pulls_tot % self.bandit.NumArms()
-        reward_a = self.bandit.Pull(a)
-        self.updateRewards(a, reward_a)
-        return (a, reward_a)
+        return super.Pull(self.bandit, a)
     
 class UCB(MultiArmedBandit):
-    def Pull(self):
+    def calculateArmPull(self):
         if self.pulls_tot < self.numarms:
             #pull unpulled arms
             a = self.pulls_tot % self.numarms
@@ -47,11 +47,30 @@ class UCB(MultiArmedBandit):
             #get exploration term
             avg = self.rewards_avg
             x = np.log(self.pulls_tot)
-            y = np.divide(n, self.pulls)
+            y = np.divide(x, self.pulls)
             epsilon = np.sqrt(y)
             a = np.argmax(avg + epsilon)
         
-        reward = self.bandit.Pull(a)
-        self.updateRewards(a, reward)
-        return (a, reward)
+        return super.Pull(self.bandit, a)
+    
+#0.5-greedy by default
+class EpsilonGreedy(MultiArmedBandit):
+    def __init(self, bandit, epsilon = 0.5):
+        self.epislon = epsilon
+        self.bandit = bandit
+    def calculateArmPull(self, a):
+        numarms = self.numarms
+        a_opt = self.optimal_arm
+        if self.epsilon <= random.uniform(0,1):
+            a = a_opt
+        else:
+            a_avail = list(range(numarms)).remove(a_opt)
+            a = random.choose(a_avail)
+            
+        return super.Pull(self.bandit, a)
+        
+    
+            
+            
+    
     
