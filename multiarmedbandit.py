@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 26 20:59:24 2017
-
-@author: adivt
+Multi-Armed Bandit to hold algorithms
+-Incremental Uniform
+-UCB
+-Epsilon-Greedy
 """
 
 import numpy as np
@@ -21,7 +22,7 @@ class MultiArmedBandit:
         self.rewards_avg = [0] * self.numarms
     
     def getOptimalArm(self):
-        return self.bandit.getOptimal()
+        return self.optimal_arm
     
     def Pull(self, bandit, a):
         reward = bandit.Pull(a)
@@ -38,6 +39,7 @@ class MultiArmedBandit:
         self.pulls[a] += 1
         self.pulls_tot += 1            
         self.rewards_avg = np.divide(self.reward_accumulator, self.pulls)
+        self.optimal_arm = np.argmax(self.rewards_avg)
     
 class IncrementalUniform(MultiArmedBandit):
     def __init__(self, bandit):
